@@ -23,7 +23,6 @@ import morgan from "morgan"
 
 dotenv.config()
 
-// server.ts
 export class Server {
   private app: express.Application
   private port: number
@@ -42,27 +41,16 @@ export class Server {
     this.app.use(express.urlencoded({ extended: true }))
     this.app.use(uploadMiddleware)
     this.app.use(morgan("dev"))
-
-    // ⚠️ IMPORTANTE: No aplicar authMiddleware globalmente
-    // En lugar de esto:
-    // const [clerkAuth, userSync] = authMiddleware()
-    // this.app.use(clerkAuth)
-    // this.app.use(userSync)
-
-    // Mejor: Aplicar solo a rutas específicas
   }
 
   private setupRoutes(): void {
-    // Repositorios
     const postRepository = new TursoPostRepository()
     const categoryRepository = new TursoCategoryRepository()
     const userRepository = new TursoUserRepository()
     const imageRepository = new S3ImageRepository()
 
-    // Servicios de almacenamiento
     const imageStorageService = new S3ImageStorageService(imageRepository)
 
-    // Servicios de aplicación
     const imageService = new ImageService(imageStorageService, imageRepository)
     const postService = new PostService(
       postRepository,
@@ -75,14 +63,12 @@ export class Server {
     )
     const userSyncService = new UserSyncService(userRepository)
 
-    // Rutas
     const postRoutes = createPostRoutes(postService)
     const categoryRoutes = createCategoryRoutes(categoryService)
     const userRoutes = createUserRoutes(userSyncService)
     const authRoutes = createAuthRoutes()
     const uploadRoutes = createUploadRoutes(imageService)
 
-    // Health check (público)
     this.app.get("/health", async (req, res) => {
       const dbConnected = await TursoDatabase.getInstance()
       res.status(200).json({
@@ -92,10 +78,8 @@ export class Server {
       })
     })
 
-    // Rutas públicas (sin autenticación)
     this.app.use("/api/auth", authRoutes)
 
-    // ✅ Aplicar middleware de autenticación SOLO a rutas protegidas
     const [clerkAuth, userSync] = authMiddleware()
 
     this.app.use("/api", postRoutes)
