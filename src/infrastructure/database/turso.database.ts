@@ -101,7 +101,6 @@ export class TursoDatabase {
         updatedAt DATETIME DEFAULT CURRENT_TIMESTAMP,
         categoryId TEXT NOT NULL,
         authorId TEXT NOT NULL,
-        authorName TEXT NOT NULL,
         isFeatured BOOLEAN NOT NULL DEFAULT FALSE,
         date DATETIME DEFAULT CURRENT_TIMESTAMP,
         FOREIGN KEY (categoryId) REFERENCES categories(id) ON DELETE RESTRICT,

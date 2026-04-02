@@ -48,9 +48,13 @@ export class TursoPostRepository implements IPostRepository {
 
   async findAll(): Promise<Post[]> {
     const result = await this.db.execute(`
-      SELECT p.*, c.name as category_name, c.slug as category_slug
+      SELECT p.*,
+      u.name as authorName,
+      c.name as category_name,
+      c.slug as category_slug
       FROM posts p
       LEFT JOIN categories c ON p.categoryId = c.id
+      LEFT JOIN users u ON p.authorId = u.id
       ORDER BY p.date DESC
     `)
     return result.rows.map((row) => this.mapToPost(row))
@@ -59,9 +63,13 @@ export class TursoPostRepository implements IPostRepository {
   async findBySlug(slug: string): Promise<Post | null> {
     const result = await this.db.execute({
       sql: `
-      SELECT p.*, c.name as category_name, c.slug as category_slug
+      SELECT p.*,
+      u.name as authorName,
+      c.name as category_name,
+      c.slug as category_slug
       FROM posts p
       LEFT JOIN categories c ON p.categoryId = c.id
+      LEFT JOIN users u ON p.authorId = u.id
       WHERE p.slug = ?`,
       args: [slug],
     })
