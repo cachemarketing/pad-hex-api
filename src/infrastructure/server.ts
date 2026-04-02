@@ -91,8 +91,6 @@ export class Server {
   async start(): Promise<void> {
     try {
       await TursoDatabase.getInstance().initialize()
-      await this.createImagesTable()
-      await this.createUsersTable()
 
       const userRepository = new TursoUserRepository()
       const userSyncService = new UserSyncService(userRepository)
@@ -106,45 +104,5 @@ export class Server {
       console.error("Error al iniciar el servidor:", error)
       throw error
     }
-  }
-
-  private async createImagesTable(): Promise<void> {
-    const db = TursoDatabase.getInstance().getClient()
-    await db.execute(`
-      CREATE TABLE IF NOT EXISTS images (
-        id TEXT PRIMARY KEY,
-        url TEXT NOT NULL,
-        key TEXT UNIQUE NOT NULL,
-        bucket TEXT NOT NULL,
-        filename TEXT NOT NULL,
-        originalName TEXT NOT NULL,
-        mimeType TEXT NOT NULL,
-        size INTEGER NOT NULL,
-        width INTEGER,
-        height INTEGER,
-        uploadedBy TEXT NOT NULL,
-        createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
-        FOREIGN KEY (uploadedBy) REFERENCES users(id) ON DELETE CASCADE
-      )
-    `)
-    console.log("  ✓ Tabla images creada")
-  }
-
-  private async createUsersTable(): Promise<void> {
-    const db = TursoDatabase.getInstance().getClient()
-    await db.execute(`
-      CREATE TABLE IF NOT EXISTS users (
-        id TEXT PRIMARY KEY,
-        clerkId TEXT UNIQUE NOT NULL,
-        email TEXT UNIQUE NOT NULL,
-        name TEXT,
-        role TEXT DEFAULT 'user',
-        imageUrl TEXT,
-        isActive INTEGER DEFAULT 1,
-        createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
-        updatedAt DATETIME DEFAULT CURRENT_TIMESTAMP
-      )
-    `)
-    console.log("  ✓ Tabla users creada")
   }
 }

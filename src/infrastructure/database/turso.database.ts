@@ -39,6 +39,10 @@ export class TursoDatabase {
       // 3. Tabla de posts
       await this.createPostsTable()
 
+      await this.createImagesTable()
+
+      await this.createUsersTable()
+
       // 4. Índices
       await this.createIndexes()
 
@@ -48,6 +52,27 @@ export class TursoDatabase {
       console.error("❌ Error inicializando DB:", error)
       throw error
     }
+  }
+
+  private async createImagesTable(): Promise<void> {
+    await this.client.execute(`
+      CREATE TABLE IF NOT EXISTS images (
+        id TEXT PRIMARY KEY,
+        url TEXT NOT NULL,
+        key TEXT UNIQUE NOT NULL,
+        bucket TEXT NOT NULL,
+        filename TEXT NOT NULL,
+        originalName TEXT NOT NULL,
+        mimeType TEXT NOT NULL,
+        size INTEGER NOT NULL,
+        width INTEGER,
+        height INTEGER,
+        uploadedBy TEXT NOT NULL,
+        createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (uploadedBy) REFERENCES users(id) ON DELETE CASCADE
+      )
+    `)
+    console.log("  ✓ Tabla images creada")
   }
 
   private async createUsersTable(): Promise<void> {
