@@ -35,8 +35,20 @@ export class Server {
   }
 
   private setupMiddleware(): void {
+    const origins = process.env.ACCEPTED_ORIGIN
+      ? process.env.ACCEPTED_ORIGIN.split(",").map((o) => o.trim())
+      : []
+    const corsOptions = {
+      origin: origins,
+      methods: "GET,PUT,POST,DELETE,OPTIONS", // Añadido OPTIONS explícitamente
+      allowedHeaders: ["Content-Type", "Authorization"],
+      exposedHeaders: ["set-cookie"],
+      optionsSuccessStatus: 200, // Mejor usar 204 para preflight
+      credentials: true,
+    }
     this.app.use(helmet())
-    this.app.use(cors())
+    this.app.use(cors(corsOptions))
+
     this.app.use(express.json())
     this.app.use(express.urlencoded({ extended: true }))
     this.app.use(uploadMiddleware)
