@@ -99,7 +99,7 @@ export class Server {
     const [clerkAuth, userSync] = authMiddleware()
 
     this.app.use("/api", postRoutes)
-    this.app.use("/api", clerkAuth, userSync, categoryRoutes)
+    this.app.use("/api", categoryRoutes)
     this.app.use("/api", clerkAuth, userSync, userRoutes)
     this.app.use("/api", clerkAuth, userSync, uploadRoutes)
   }
