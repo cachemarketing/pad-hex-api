@@ -25,9 +25,9 @@ dotenv.config()
 
 export class Server {
   private app: express.Application
-  private port: number
+  private port: number | string
 
-  constructor(port: number = 3000) {
+  constructor(port: number | string = 3000) {
     this.app = express()
     this.port = port
     this.setupMiddleware()
