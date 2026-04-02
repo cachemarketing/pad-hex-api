@@ -18,6 +18,7 @@ export interface IPost {
   authorName: string
   category_name: string
   date?: Date
+  isFeatured: boolean
 }
 
 export class Post {
@@ -34,10 +35,11 @@ export class Post {
   public readonly createdAt: Date
   public updatedAt: Date
   public readonly categoryId: string
-  public readonly authorId: string // ← CAMBIADO: ahora es ID de usuario
-  public readonly authorName: string // ← NUEVO: nombre para mostrar
-  public readonly category_name: string // ← NUEVO: nombre para mostrar
+  public readonly authorId: string
+  public readonly authorName: string
+  public readonly category_name: string
   public readonly date: Date
+  public readonly isFeatured: boolean
 
   constructor(post: IPost) {
     this.validate(post)
@@ -55,10 +57,11 @@ export class Post {
     this.createdAt = post.createdAt || new Date()
     this.updatedAt = post.updatedAt || new Date()
     this.categoryId = post.categoryId
-    this.authorId = post.authorId // ← ID del usuario (de nuestra DB)
-    this.authorName = post.authorName // ← Nombre del usuario
-    this.category_name = post.category_name // ← Nombre del usuario
+    this.authorId = post.authorId
+    this.authorName = post.authorName
+    this.category_name = post.category_name
     this.date = post.date || new Date()
+    this.isFeatured = post.isFeatured || post.isFeatured
   }
 
   private validate(post: IPost): void {
@@ -118,6 +121,7 @@ export class Post {
       authorName: data.authorName ?? this.authorName, // ← mantener authorName
       category_name: data.category_name ?? this.category_name, // ← mantener authorName
       date: data.date ?? this.date,
+      isFeatured: data.isFeatured ?? this.isFeatured,
     }
 
     return new Post(updatedData)
@@ -138,10 +142,11 @@ export class Post {
       createdAt: this.createdAt,
       updatedAt: this.updatedAt,
       categoryId: this.categoryId,
-      authorId: this.authorId, // ← ID del autor
-      authorName: this.authorName, // ← Nombre del autor
-      category_name: this.category_name, // ← Nombre del autor
+      authorId: this.authorId,
+      authorName: this.authorName,
+      category_name: this.category_name,
       date: this.date,
+      isFeatured: this.isFeatured,
     }
   }
 }
