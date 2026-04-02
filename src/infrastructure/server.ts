@@ -34,25 +34,80 @@ export class Server {
     this.setupRoutes()
   }
 
+  // server.ts o donde tengas la configuración del Server
   private setupMiddleware(): void {
     const origins = process.env.ACCEPTED_ORIGIN
       ? process.env.ACCEPTED_ORIGIN.split(",").map((o) => o.trim())
       : []
+
+    // Log para debugging
+    console.log("🔧 CORS Origins configurados:", origins)
+    console.log("🌍 NODE_ENV:", process.env.NODE_ENV)
+
     const corsOptions = {
-      origin: origins,
-      methods: "GET,PUT,POST,DELETE,OPTIONS", // Añadido OPTIONS explícitamente
-      allowedHeaders: ["Content-Type", "Authorization"],
-      exposedHeaders: ["set-cookie"],
-      optionsSuccessStatus: 200, // Mejor usar 204 para preflight
+      origin: (
+        origin: string | undefined,
+        callback: (err: Error | null, allow?: boolean) => void,
+      ) => {
+        // Permitir peticiones sin origen (como Postman, scripts locales)
+        if (!origin) return callback(null, true)
+
+        // En desarrollo, permitir localhost
+        if (process.env.NODE_ENV !== "production") {
+          return callback(null, true)
+        }
+
+        // En producción, verificar contra la lista blanca
+        if (origins.includes(origin)) {
+          callback(null, true)
+        } else {
+          console.error(
+            `❌ CORS bloqueado: ${origin} no está en la lista blanca`,
+          )
+          callback(new Error(`Origen ${origin} no permitido por CORS`))
+        }
+      },
+      methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
+      allowedHeaders: [
+        "Content-Type",
+        "Authorization",
+        "X-Requested-With",
+        "Accept",
+      ],
+      exposedHeaders: ["Content-Length", "X-Request-Id"],
       credentials: true,
+      optionsSuccessStatus: 200,
+      maxAge: 86400, // 24 horas cache para preflight
     }
-    this.app.use(helmet())
+
+    // Helmet debe ir ANTES que CORS para producción
+    this.app.use(
+      helmet({
+        crossOriginResourcePolicy: { policy: "cross-origin" },
+        crossOriginOpenerPolicy: { policy: "same-origin-allow-popups" },
+      }),
+    )
+
     this.app.use(cors(corsOptions))
 
-    this.app.use(express.json())
-    this.app.use(express.urlencoded({ extended: true }))
+    // Manejar explícitamente OPTIONS para todas las rutas
+    this.app.options("*", cors(corsOptions))
+
+    this.app.use(express.json({ limit: "10mb" }))
+    this.app.use(express.urlencoded({ extended: true, limit: "10mb" }))
     this.app.use(uploadMiddleware)
     this.app.use(morgan("dev"))
+
+    // Middleware para debuggear CORS
+    this.app.use((req, res, next) => {
+      console.log(
+        `📡 ${req.method} ${req.path} - Origin: ${req.headers.origin || "no origin"}`,
+      )
+      if (req.method === "OPTIONS") {
+        console.log("🔄 Preflight request recibida")
+      }
+      next()
+    })
   }
 
   private setupRoutes(): void {
