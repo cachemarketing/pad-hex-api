@@ -67,7 +67,7 @@ export class Server {
           callback(new Error(`Origen ${origin} no permitido por CORS`))
         }
       },
-      methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
+      methods: "GET,POST,PUT,DELETE,OPTIONS,PATCH",
       allowedHeaders: [
         "Content-Type",
         "Authorization",
