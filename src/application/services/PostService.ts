@@ -35,7 +35,6 @@ export class PostService {
       ...postData,
       slug,
       authorId: user.id,
-      authorName: user.name,
     })
 
     return await this.postRepository.save(post)

@@ -10,8 +10,8 @@ export class TursoPostRepository implements IPostRepository {
       sql: `INSERT INTO posts (
         id, title, beforeTitle, lead, metaDesc, featuredImg, caption, 
         body, slug, readTime, createdAt, updatedAt, categoryId, 
-        authorId, authorName, date
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        authorId,  date
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       args: [
         post.id,
         post.title,
@@ -27,7 +27,6 @@ export class TursoPostRepository implements IPostRepository {
         post.updatedAt.toISOString(),
         post.categoryId,
         post.authorId, // ← ID del autor
-        post.authorName, // ← Nombre del autor
         post.date.toISOString(),
       ],
     })

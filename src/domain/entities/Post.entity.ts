@@ -78,10 +78,6 @@ export class Post {
       // ← VALIDAR authorId
       throw new Error("El autor es requerido")
     }
-    if (!post.authorName) {
-      // ← VALIDAR authorName
-      throw new Error("El nombre del autor es requerido")
-    }
   }
 
   private generateSlug(title: string): string {
