@@ -1,4 +1,15 @@
 import { Server } from "./infrastructure/server"
-const PORT = process.env.PORT ?? 3500
+
+// Aseguramos que el puerto sea un número
+const PORT = Number(process.env.PORT) || 3500
+
 const server = new Server(PORT)
-server.start()
+
+// Ejecución con manejo básico de errores
+try {
+  server.start()
+  console.log(`[Main]: Application started on port ${PORT}`)
+} catch (error) {
+  console.error("[Main]: Failed to start server", error)
+  process.exit(1)
+}
