@@ -135,10 +135,11 @@ export class TursoPostRepository implements IPostRepository {
       createdAt: new Date(row.createdAt),
       updatedAt: new Date(row.updatedAt),
       categoryId: row.categoryId,
-      authorId: row.authorId, // ← ID del autor
-      authorName: row.authorName, // ← Nombre del autor
-      category_name: row.category_name, // ← Nombre del autor
+      authorId: row.authorId,
+      authorName: row.authorName,
+      category_name: row.category_name,
       date: new Date(row.date),
+      isFeatured: row.isFeatured,
     })
   }
 }
