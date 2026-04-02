@@ -1,6 +1,5 @@
-// infrastructure/repositories/TursoPostRepository.ts (actualizar SQL)
 import { IPostRepository } from "../../domain/repositories/IPostRepository"
-import { Post, IPost } from "../../domain/entities/Post.entity"
+import { Post } from "../../domain/entities/Post.entity"
 import { TursoDatabase } from "../database/turso.database"
 
 export class TursoPostRepository implements IPostRepository {
