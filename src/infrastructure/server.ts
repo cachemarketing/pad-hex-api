@@ -27,7 +27,7 @@ export class Server {
   private app: express.Application
   private port: number | string
 
-  constructor(port: number | string = 3000) {
+  constructor(port: number | string = 3500) {
     this.app = express()
     this.port = port
     this.setupMiddleware()
