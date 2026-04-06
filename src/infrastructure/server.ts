@@ -137,14 +137,37 @@ export class Server {
     const uploadRoutes = createUploadRoutes(imageService)
 
     this.app.get("/health", async (req, res) => {
-      const dbConnected = await TursoDatabase.getInstance()
-      res.status(200).json({
-        status: "OK",
-        timestamp: new Date(),
-        database: dbConnected ? "connected" : "disconnected",
-      })
+      try {
+        // No esperar la base de datos si tarda
+        const dbStatus = await Promise.race([
+          TursoDatabase.getInstance(),
+          new Promise((resolve) => setTimeout(() => resolve("timeout"), 2000)),
+        ])
+
+        res.status(200).json({
+          status: "OK",
+          timestamp: new Date().toISOString(),
+          database: dbStatus === "timeout" ? "checking" : "connected",
+          port: this.port,
+        })
+      } catch (error) {
+        res.status(200).json({
+          status: "OK",
+          timestamp: new Date().toISOString(),
+          database: "error",
+          port: this.port,
+        })
+      }
     })
 
+    this.app.get("/ready", (req, res) => {
+      res.status(200).json({ status: "ready" })
+    })
+
+    // Liveness probe
+    this.app.get("/live", (req, res) => {
+      res.status(200).json({ status: "alive" })
+    })
     this.app.use("/api/auth", authRoutes)
 
     const [clerkAuth, userSync] = authMiddleware()
