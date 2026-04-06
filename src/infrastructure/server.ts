@@ -155,31 +155,29 @@ export class Server {
     this.app.use("/api", clerkAuth, userSync, uploadRoutes)
   }
 
-  async start(): Promise<void> {
-    try {
-      console.log("🔄 Inicializando base de datos...")
-      await TursoDatabase.getInstance().initialize()
-      console.log("✅ Base de datos inicializada")
+  start(): void {
+    ;(async () => {
+      try {
+        console.log("🔄 Inicializando base de datos...")
+        await TursoDatabase.getInstance().initialize()
+        console.log("✅ Base de datos inicializada")
 
-      console.log("🔄 Sincronizando usuarios...")
-      const userRepository = new TursoUserRepository()
-      const userSyncService = new UserSyncService(userRepository)
-      await userSyncService.syncAllUsers()
-      console.log("✅ Usuarios sincronizados")
+        console.log("🔄 Sincronizando usuarios...")
+        const userRepository = new TursoUserRepository()
+        const userSyncService = new UserSyncService(userRepository)
+        await userSyncService.syncAllUsers()
+        console.log("✅ Usuarios sincronizados")
 
-      console.log(`🔄 Intentando iniciar servidor en puerto ${this.port}...`)
+        console.log(`🔄 Intentando iniciar servidor en puerto ${this.port}...`)
 
-      // IMPORTANTE: No usar Promise, dejar que el event loop maneje el listen
-      this.app.listen(this.port, () => {
-        console.log(`🚀 Servidor corriendo en http://localhost:${this.port}`)
-        console.log(`📸 Subida de imágenes a S3 configurada`)
-      })
-
-      // No devolvemos nada, dejamos que el servidor siga corriendo
-      return Promise.resolve()
-    } catch (error) {
-      console.error("❌ Error al inicializar el servidor:", error)
-      throw error
-    }
+        this.app.listen(this.port, () => {
+          console.log(`🚀 Servidor corriendo en http://localhost:${this.port}`)
+          console.log(`📸 Subida de imágenes a S3 configurada`)
+        })
+      } catch (error) {
+        console.error("❌ Error al inicializar el servidor:", error)
+        process.exit(1)
+      }
+    })()
   }
 }
