@@ -14,10 +14,16 @@ interface AuthenticatedRequest extends Request {
   clerkAuth?: ReturnType<typeof getAuth> // Cambiar nombre para evitar conflicto
 }
 
+const origins = process.env.ACCEPTED_ORIGIN
+  ? process.env.ACCEPTED_ORIGIN.split(",").map((o) => o.trim())
+  : []
+
 // Usar el middleware oficial de Clerk
 export const requireAuth = clerkMiddleware({
   publishableKey: process.env.CLERK_PUBLISHABLE_KEY,
   secretKey: process.env.CLERK_SECRET_KEY,
+  authorizedParties: origins,
+  debug: true,
 })
 
 // Middleware personalizado que también sincroniza el usuario con nuestra DB
