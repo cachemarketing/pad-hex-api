@@ -31,7 +31,6 @@ export class Server {
     this.app = express()
     this.port = port
     this.setupMiddleware()
-    this.setupRoutes()
   }
 
   // server.ts o donde tengas la configuración del Server
@@ -110,7 +109,7 @@ export class Server {
     })
   }
 
-  private setupRoutes(): void {
+  public setupRoutes(): void {
     const postRepository = new TursoPostRepository()
     const categoryRepository = new TursoCategoryRepository()
     const userRepository = new TursoUserRepository()
@@ -157,28 +156,27 @@ export class Server {
 
   async start(): Promise<void> {
     try {
-      await TursoDatabase.getInstance().initialize()
+      // 1. Inicializar DB primero
+      const db = TursoDatabase.getInstance()
+      await db.initialize()
+      console.log("✅ Conexión a DB verificada")
 
-      const userRepository = new TursoUserRepository()
-      const userSyncService = new UserSyncService(userRepository)
-      // await userSyncService.syncAllUsers()
+      // 2. Configurar rutas AHORA que la DB existe
+      this.setupRoutes()
 
-      // Crear una promesa para manejar el listen
       return new Promise((resolve, reject) => {
         const server = this.app.listen(this.port, () => {
           console.log(`🚀 Servidor corriendo en http://localhost:${this.port}`)
-          console.log(`📸 Subida de imágenes a S3 configurada`)
           resolve()
         })
 
         server.on("error", (error: any) => {
-          console.error("Error en el servidor:", error)
           reject(error)
         })
       })
     } catch (error) {
-      console.error("Error al iniciar el servidor:", error)
-      throw error
+      console.error("Error crítico al iniciar:", error)
+      process.exit(1) // Forzamos salida con código de error
     }
   }
 }
