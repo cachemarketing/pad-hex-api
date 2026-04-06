@@ -30,7 +30,7 @@ export class TursoDatabase {
     if (this.initialized) return
 
     try {
-      // 1. Tabla de usuarios
+      /*  // 1. Tabla de usuarios
       await this.createUsersTable()
 
       // 2. Tabla de categorías
@@ -44,7 +44,7 @@ export class TursoDatabase {
       await this.createUsersTable()
 
       // 4. Índices
-      await this.createIndexes()
+      await this.createIndexes() */
 
       this.initialized = true
       console.log("✅ Base de datos Turso inicializada")
