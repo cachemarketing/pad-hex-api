@@ -163,9 +163,18 @@ export class Server {
       const userSyncService = new UserSyncService(userRepository)
       await userSyncService.syncAllUsers()
 
-      this.app.listen(this.port, () => {
-        console.log(`🚀 Servidor corriendo en http://localhost:${this.port}`)
-        console.log(`📸 Subida de imágenes a S3 configurada`)
+      // Crear una promesa para manejar el listen
+      return new Promise((resolve, reject) => {
+        const server = this.app.listen(this.port, () => {
+          console.log(`🚀 Servidor corriendo en http://localhost:${this.port}`)
+          console.log(`📸 Subida de imágenes a S3 configurada`)
+          resolve()
+        })
+
+        server.on("error", (error: any) => {
+          console.error("Error en el servidor:", error)
+          reject(error)
+        })
       })
     } catch (error) {
       console.error("Error al iniciar el servidor:", error)
