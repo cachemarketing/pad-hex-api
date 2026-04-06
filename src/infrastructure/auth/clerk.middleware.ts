@@ -4,6 +4,8 @@ import { clerkMiddleware, getAuth } from "@clerk/express"
 import { TursoUserRepository } from "../repositories/TursoUserRepository"
 import { UserSyncService } from "../../application/services/UserSyncService"
 import { User } from "../../domain/entities/User.entity"
+import dotenv from "dotenv"
+dotenv.config()
 
 // Definir interfaz extendida para Request
 interface AuthenticatedRequest extends Request {
@@ -13,7 +15,10 @@ interface AuthenticatedRequest extends Request {
 }
 
 // Usar el middleware oficial de Clerk
-export const requireAuth = clerkMiddleware()
+export const requireAuth = clerkMiddleware({
+  publishableKey: process.env.CLERK_PUBLISHABLE_KEY,
+  secretKey: process.env.CLERK_SECRET_KEY,
+})
 
 // Middleware personalizado que también sincroniza el usuario con nuestra DB
 export const syncUser = () => {
