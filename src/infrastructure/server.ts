@@ -31,6 +31,7 @@ export class Server {
     this.app = express()
     this.port = port
     this.setupMiddleware()
+    this.setupRoutes()
   }
 
   // server.ts o donde tengas la configuración del Server
@@ -109,7 +110,7 @@ export class Server {
     })
   }
 
-  public setupRoutes(): void {
+  private setupRoutes(): void {
     const postRepository = new TursoPostRepository()
     const categoryRepository = new TursoCategoryRepository()
     const userRepository = new TursoUserRepository()
@@ -156,27 +157,46 @@ export class Server {
 
   async start(): Promise<void> {
     try {
-      // 1. Inicializar DB primero
-      const db = TursoDatabase.getInstance()
-      await db.initialize()
-      console.log("✅ Conexión a DB verificada")
+      console.log("🔄 Inicializando base de datos...")
+      await TursoDatabase.getInstance().initialize()
+      console.log("✅ Base de datos inicializada")
 
-      // 2. Configurar rutas AHORA que la DB existe
-      this.setupRoutes()
+      console.log("🔄 Sincronizando usuarios...")
+      const userRepository = new TursoUserRepository()
+      const userSyncService = new UserSyncService(userRepository)
+      await userSyncService.syncAllUsers()
+      console.log("✅ Usuarios sincronizados")
+
+      console.log(`🔄 Intentando iniciar servidor en puerto ${this.port}...`)
 
       return new Promise((resolve, reject) => {
-        const server = this.app.listen(this.port, () => {
+        const serverInstance = this.app.listen(this.port, () => {
           console.log(`🚀 Servidor corriendo en http://localhost:${this.port}`)
+          console.log(`📸 Subida de imágenes a S3 configurada`)
           resolve()
         })
 
-        server.on("error", (error: any) => {
+        serverInstance.on("error", (error: any) => {
+          console.error("❌ Error al iniciar el servidor:", error)
+
+          if (error.code === "EADDRINUSE") {
+            console.error(`❌ El puerto ${this.port} ya está en uso`)
+            console.error(
+              `   Puedes matar el proceso con: kill -9 $(lsof -t -i:${this.port})`,
+            )
+          } else if (error.code === "EACCES") {
+            console.error(
+              `❌ No tienes permisos para usar el puerto ${this.port}`,
+            )
+            console.error(`   Usa un puerto mayor a 1024 o ejecuta como root`)
+          }
+
           reject(error)
         })
       })
     } catch (error) {
-      console.error("Error crítico al iniciar:", error)
-      process.exit(1) // Forzamos salida con código de error
+      console.error("❌ Error al inicializar el servidor:", error)
+      throw error
     }
   }
 }
