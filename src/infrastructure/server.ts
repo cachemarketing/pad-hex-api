@@ -161,7 +161,7 @@ export class Server {
 
       const userRepository = new TursoUserRepository()
       const userSyncService = new UserSyncService(userRepository)
-      await userSyncService.syncAllUsers()
+      // await userSyncService.syncAllUsers()
 
       // Crear una promesa para manejar el listen
       return new Promise((resolve, reject) => {
