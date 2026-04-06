@@ -169,31 +169,14 @@ export class Server {
 
       console.log(`🔄 Intentando iniciar servidor en puerto ${this.port}...`)
 
-      return new Promise((resolve, reject) => {
-        const serverInstance = this.app.listen(this.port, () => {
-          console.log(`🚀 Servidor corriendo en http://localhost:${this.port}`)
-          console.log(`📸 Subida de imágenes a S3 configurada`)
-          resolve()
-        })
-
-        serverInstance.on("error", (error: any) => {
-          console.error("❌ Error al iniciar el servidor:", error)
-
-          if (error.code === "EADDRINUSE") {
-            console.error(`❌ El puerto ${this.port} ya está en uso`)
-            console.error(
-              `   Puedes matar el proceso con: kill -9 $(lsof -t -i:${this.port})`,
-            )
-          } else if (error.code === "EACCES") {
-            console.error(
-              `❌ No tienes permisos para usar el puerto ${this.port}`,
-            )
-            console.error(`   Usa un puerto mayor a 1024 o ejecuta como root`)
-          }
-
-          reject(error)
-        })
+      // IMPORTANTE: No usar Promise, dejar que el event loop maneje el listen
+      this.app.listen(this.port, () => {
+        console.log(`🚀 Servidor corriendo en http://localhost:${this.port}`)
+        console.log(`📸 Subida de imágenes a S3 configurada`)
       })
+
+      // No devolvemos nada, dejamos que el servidor siga corriendo
+      return Promise.resolve()
     } catch (error) {
       console.error("❌ Error al inicializar el servidor:", error)
       throw error
