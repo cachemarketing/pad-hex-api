@@ -184,25 +184,29 @@ export class Server {
       await TursoDatabase.getInstance().initialize()
       console.log("✅ Base de datos inicializada")
 
-      console.log("🔄 Sincronizando usuarios...")
+      // NO sincronizar usuarios aquí - hacerlo en background
+      console.log("🔄 Iniciando sincronización de usuarios en background...")
       const userRepository = new TursoUserRepository()
       const userSyncService = new UserSyncService(userRepository)
-      await userSyncService.syncAllUsers()
-      console.log("✅ Usuarios sincronizados")
+
+      // No esperar a que termine - ejecutar en segundo plano
+      userSyncService.syncAllUsers().catch((error) => {
+        console.error(
+          "⚠️ Error en sincronización de usuarios (no crítico):",
+          error.message,
+        )
+      })
 
       console.log(`🔄 Intentando iniciar servidor en puerto ${this.port}...`)
 
-      // Crear el servidor
       const serverInstance = this.app.listen(this.port, () => {
         console.log(`🚀 Servidor corriendo en http://localhost:${this.port}`)
         console.log(`📸 Subida de imágenes a S3 configurada`)
       })
 
-      // Configurar timeouts
       serverInstance.keepAliveTimeout = 65000
       serverInstance.headersTimeout = 66000
 
-      // Devolver promesa resuelta
       return Promise.resolve()
     } catch (error) {
       console.error("❌ Error al iniciar el servidor:", error)
