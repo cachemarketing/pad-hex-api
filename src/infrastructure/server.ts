@@ -178,29 +178,35 @@ export class Server {
     this.app.use("/api", clerkAuth, userSync, uploadRoutes)
   }
 
-  start(): void {
-    ;(async () => {
-      try {
-        console.log("🔄 Inicializando base de datos...")
-        await TursoDatabase.getInstance().initialize()
-        console.log("✅ Base de datos inicializada")
+  async start(): Promise<void> {
+    try {
+      console.log("🔄 Inicializando base de datos...")
+      await TursoDatabase.getInstance().initialize()
+      console.log("✅ Base de datos inicializada")
 
-        console.log("🔄 Sincronizando usuarios...")
-        const userRepository = new TursoUserRepository()
-        const userSyncService = new UserSyncService(userRepository)
-        await userSyncService.syncAllUsers()
-        console.log("✅ Usuarios sincronizados")
+      console.log("🔄 Sincronizando usuarios...")
+      const userRepository = new TursoUserRepository()
+      const userSyncService = new UserSyncService(userRepository)
+      await userSyncService.syncAllUsers()
+      console.log("✅ Usuarios sincronizados")
 
-        console.log(`🔄 Intentando iniciar servidor en puerto ${this.port}...`)
+      console.log(`🔄 Intentando iniciar servidor en puerto ${this.port}...`)
 
-        this.app.listen(this.port, () => {
-          console.log(`🚀 Servidor corriendo en http://localhost:${this.port}`)
-          console.log(`📸 Subida de imágenes a S3 configurada`)
-        })
-      } catch (error) {
-        console.error("❌ Error al inicializar el servidor:", error)
-        process.exit(1)
-      }
-    })()
+      // Crear el servidor
+      const serverInstance = this.app.listen(this.port, () => {
+        console.log(`🚀 Servidor corriendo en http://localhost:${this.port}`)
+        console.log(`📸 Subida de imágenes a S3 configurada`)
+      })
+
+      // Configurar timeouts
+      serverInstance.keepAliveTimeout = 65000
+      serverInstance.headersTimeout = 66000
+
+      // Devolver promesa resuelta
+      return Promise.resolve()
+    } catch (error) {
+      console.error("❌ Error al iniciar el servidor:", error)
+      throw error
+    }
   }
 }
