@@ -1,45 +1,31 @@
 // clerk.middleware.ts
 import { Request, Response, NextFunction } from "express"
-import { getAuth } from "@clerk/express"
+import { clerkMiddleware, getAuth } from "@clerk/express"
 import { TursoUserRepository } from "../repositories/TursoUserRepository"
 import { UserSyncService } from "../../application/services/UserSyncService"
 import { User } from "../../domain/entities/User.entity"
 import dotenv from "dotenv"
 dotenv.config()
 
+// Definir interfaz extendida para Request
 interface AuthenticatedRequest extends Request {
   userId?: string
   user?: User
-  clerkAuth?: ReturnType<typeof getAuth>
+  clerkAuth?: ReturnType<typeof getAuth> // Cambiar nombre para evitar conflicto
 }
 
-// Middleware simple sin el middleware oficial que puede fallar
-export const requireAuth = async (
-  req: Request,
-  res: Response,
-  next: NextFunction,
-) => {
-  try {
-    const auth = getAuth(req)
+const origins = process.env.ACCEPTED_ORIGIN
+  ? process.env.ACCEPTED_ORIGIN.split(",").map((o) => o.trim())
+  : []
 
-    if (!auth || !auth.userId) {
-      return res.status(401).json({
-        success: false,
-        error: "No autenticado",
-      })
-    }
+// Usar el middleware oficial de Clerk
+export const requireAuth = clerkMiddleware({
+  publishableKey: process.env.CLERK_PUBLISHABLE_KEY,
+  secretKey: process.env.CLERK_SECRET_KEY,
+  authorizedParties: origins,
+})
 
-    next()
-  } catch (error) {
-    console.error("Error en autenticación:", error)
-    return res.status(401).json({
-      success: false,
-      error: "Error de autenticación",
-    })
-  }
-}
-
-// Middleware para sincronizar usuario
+// Middleware personalizado que también sincroniza el usuario con nuestra DB
 export const syncUser = () => {
   return async (
     req: AuthenticatedRequest,
@@ -47,47 +33,49 @@ export const syncUser = () => {
     next: NextFunction,
   ) => {
     try {
+      // ✅ Usar getAuth, NO req.auth
       const auth = getAuth(req)
 
       if (auth && auth.userId) {
+        // Sincronizar usuario con nuestra base de datos
         const userRepository = new TursoUserRepository()
         const userSyncService = new UserSyncService(userRepository)
 
-        // Hacer sync en background sin await
-        userSyncService
-          .syncUserFromClerk(auth.userId)
-          .then((syncedUser) => {
-            if (syncedUser) {
-              req.userId = syncedUser.clerkId
-              req.user = syncedUser
-              req.clerkAuth = auth
-            }
-          })
-          .catch((error) => {
-            console.error("Error syncing user in background:", error)
-          })
+        const syncedUser = await userSyncService.syncUserFromClerk(auth.userId)
+
+        if (syncedUser) {
+          req.userId = syncedUser.clerkId
+          req.user = syncedUser
+          req.clerkAuth = auth // Guardar auth con otro nombre
+        }
+      } else {
+        console.log("No valid auth from Clerk")
       }
 
       next()
     } catch (error) {
-      console.error("Error in sync middleware:", error)
+      console.error("Error syncing user:", error)
       next()
     }
   }
 }
 
+// Middleware combinado: autenticación + sincronización
 export const authMiddleware = () => {
   return [requireAuth, syncUser()]
 }
 
+// Helper para obtener el usuario autenticado en rutas
 export const getAuthUser = (req: Request) => {
   return getAuth(req)
 }
 
+// Helper para obtener el usuario de nuestra DB
 export const getCurrentUser = (req: AuthenticatedRequest): User | undefined => {
   return req.user
 }
 
+// Middleware para verificar roles específicos
 export const requireRole = (roles: string[]) => {
   return async (
     req: AuthenticatedRequest,
@@ -95,6 +83,7 @@ export const requireRole = (roles: string[]) => {
     next: NextFunction,
   ) => {
     try {
+      // ✅ Usar getAuth, NO req.auth
       const auth = getAuth(req)
 
       if (!auth || !auth.userId) {
@@ -104,6 +93,7 @@ export const requireRole = (roles: string[]) => {
         })
       }
 
+      // Obtener usuario de nuestra DB (ya debería estar sincronizado)
       const userRepository = new TursoUserRepository()
       const user = await userRepository.findByClerkId(auth.userId)
 
@@ -121,6 +111,7 @@ export const requireRole = (roles: string[]) => {
         })
       }
 
+      // Adjuntar usuario al request para uso posterior
       req.user = user
       req.userId = user.clerkId
       req.clerkAuth = auth
@@ -136,6 +127,7 @@ export const requireRole = (roles: string[]) => {
   }
 }
 
+// Middleware para requerir autenticación y tener usuario sincronizado
 export const requireAuthWithUser = () => {
   return [requireAuth, syncUser()]
 }

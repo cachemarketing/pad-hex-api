@@ -199,13 +199,10 @@ export class Server {
 
       console.log(`🔄 Intentando iniciar servidor en puerto ${this.port}...`)
 
-      const serverInstance = this.app.listen(this.port, () => {
+      this.app.listen(this.port, () => {
         console.log(`🚀 Servidor corriendo en http://localhost:${this.port}`)
         console.log(`📸 Subida de imágenes a S3 configurada`)
       })
-
-      serverInstance.keepAliveTimeout = 65000
-      serverInstance.headersTimeout = 66000
 
       return Promise.resolve()
     } catch (error) {
