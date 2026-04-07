@@ -1,7 +1,8 @@
+// category.routes.ts
 import { Router } from "express"
 import { CategoryController } from "../controllers/CategoryController"
 import { CategoryService } from "../../application/services/CategoryService"
-import { requireAuth } from "../auth/clerk.middleware"
+import { requireAuthWithUser } from "../auth/clerk.middleware"
 
 export const createCategoryRoutes = (
   categoryService: CategoryService,
@@ -9,12 +10,20 @@ export const createCategoryRoutes = (
   const router = Router()
   const controller = new CategoryController(categoryService)
 
-  // Rutas protegidas (requieren autenticación)
-  router.post("/categories", requireAuth, controller.createCategory)
+  // Usar el middleware combinado que ya incluye auth + sync
+  router.post("/categories", requireAuthWithUser(), controller.createCategory)
   router.get("/categories", controller.getAllCategories)
   router.get("/categories/:id", controller.getCategory)
-  router.put("/categories/:id", requireAuth, controller.updateCategory)
-  router.delete("/categories/:id", requireAuth, controller.deleteCategory)
+  router.put(
+    "/categories/:id",
+    requireAuthWithUser(),
+    controller.updateCategory,
+  )
+  router.delete(
+    "/categories/:id",
+    requireAuthWithUser(),
+    controller.deleteCategory,
+  )
 
   return router
 }

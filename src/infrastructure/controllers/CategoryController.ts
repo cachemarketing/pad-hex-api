@@ -1,13 +1,20 @@
 import { Request, Response } from "express"
 import { CategoryService } from "../../application/services/CategoryService"
-
+import { User } from "../../domain/entities/User.entity"
+interface AuthenticatedRequest extends Request {
+  user?: User
+  userId?: string
+}
 export class CategoryController {
   constructor(private categoryService: CategoryService) {}
 
-  createCategory = async (req: Request, res: Response): Promise<void> => {
+  createCategory = async (
+    req: AuthenticatedRequest,
+    res: Response,
+  ): Promise<void> => {
     try {
-      //@ts-ignore
       const user = req.user
+
       if (!user) {
         res.status(401).json({ success: false, error: "No autenticado" })
         return
