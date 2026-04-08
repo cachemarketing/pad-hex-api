@@ -33,7 +33,6 @@ export class PostController {
       const verifyFeatured = isFeatured?.toString()
         ? JSON.parse(isFeatured.toString())
         : undefined
-      console.log(verifyFeatured)
       const posts = await this.postService.getAllPosts({
         isFeatured: verifyFeatured,
         title: title?.toString(),
