@@ -28,7 +28,12 @@ export class PostController {
 
   getAllPosts = async (req: Request, res: Response): Promise<void> => {
     try {
-      const posts = await this.postService.getAllPosts()
+      const { isFeatured, title, authorId } = req.query
+      const posts = await this.postService.getAllPosts({
+        isFeatured: JSON.parse(isFeatured?.toString() ?? "{}"),
+        title: title?.toString(),
+        authorId: authorId?.toString(),
+      })
       res.status(200).json({ success: true, data: posts, count: posts.length })
     } catch (error: any) {
       res.status(500).json({ success: false, error: error.message })

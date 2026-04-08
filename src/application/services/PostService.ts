@@ -1,5 +1,8 @@
 import { Post, IPost } from "../../domain/entities/Post.entity"
-import { IPostRepository } from "../../domain/repositories/IPostRepository"
+import {
+  IPostRepository,
+  PostFilters,
+} from "../../domain/repositories/IPostRepository"
 import { ICategoryRepository } from "../../domain/repositories/ICategoryRepository"
 import { IUserRepository } from "../../domain/repositories/IUserRepository"
 
@@ -40,8 +43,8 @@ export class PostService {
     return await this.postRepository.save(post)
   }
 
-  async getAllPosts(): Promise<Post[]> {
-    return await this.postRepository.findAll()
+  async getAllPosts(filters: PostFilters): Promise<Post[]> {
+    return await this.postRepository.findAll(filters)
   }
 
   async getPost(id: string): Promise<Post | null> {
