@@ -1,6 +1,10 @@
-import { IPostRepository } from "../../domain/repositories/IPostRepository"
+import {
+  IPostRepository,
+  PostFilters,
+} from "../../domain/repositories/IPostRepository"
 import { Post } from "../../domain/entities/Post.entity"
 import { TursoDatabase } from "../database/turso.database"
+import { QueryBuilder } from "../database/queryBuilder"
 
 export class TursoPostRepository implements IPostRepository {
   private db = TursoDatabase.getInstance().getClient()
@@ -44,17 +48,34 @@ export class TursoPostRepository implements IPostRepository {
     return this.mapToPost(result.rows[0])
   }
 
-  async findAll(): Promise<Post[]> {
-    const result = await this.db.execute(`
-      SELECT p.*,
-      u.name as authorName,
-      c.name as category_name,
-      c.slug as category_slug
-      FROM posts p
-      LEFT JOIN categories c ON p.categoryId = c.id
-      LEFT JOIN users u ON p.authorId = u.id
-      ORDER BY p.date DESC
-    `)
+  async findAll(filters: PostFilters): Promise<Post[]> {
+    const builder = new QueryBuilder("posts p")
+    builder
+      .select([
+        "p.*",
+        "u.name as authorName",
+        "c.name as category_name",
+        "c.slug as category_slug",
+      ])
+      .join("categories c", "p.categoryId = c.id", "LEFT")
+      .join("users u", "p.authorId = u.id", "LEFT")
+      .orderBy("p.date", "DESC")
+
+    if (typeof filters.isFeatured === "boolean") {
+      builder.where("p.isFeatured", filters.isFeatured)
+    }
+    console.log(filters.title)
+    if (filters.title) {
+      builder.where("p.title", `%${filters.title}%`, "LIKE")
+    }
+
+    if (filters.authorId) {
+      builder.where("p.authorId", filters.authorId)
+    }
+    const result = await this.db.execute({
+      sql: builder.build().sql,
+      args: builder.build().args,
+    })
     return result.rows.map((row) => this.mapToPost(row))
   }
 
