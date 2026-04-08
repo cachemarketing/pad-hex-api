@@ -64,7 +64,6 @@ export class TursoPostRepository implements IPostRepository {
     if (typeof filters.isFeatured === "boolean") {
       builder.where("p.isFeatured", filters.isFeatured)
     }
-    console.log(filters.title)
     if (filters.title) {
       builder.where("p.title", `%${filters.title}%`, "LIKE")
     }
