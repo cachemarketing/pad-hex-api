@@ -5,7 +5,7 @@ export interface IPostRepository {
   findById(id: string): Promise<Post | null>
   findAll(): Promise<Post[]>
   findBySlug(slug: string): Promise<Post | null>
-  findByCategory(categoryId: string): Promise<Post[]> // ← CAMBIADO: ahora recibe categoryId
+  findByCategory(categoryId: string): Promise<Post[]>
   delete(id: string): Promise<void>
   update(id: string, post: Partial<Post>): Promise<Post>
 }
