@@ -123,7 +123,7 @@ export class TursoPostRepository implements IPostRepository {
         title = ?, beforeTitle = ?, lead = ?, metaDesc = ?, 
         featuredImg = ?, caption = ?, body = ?, slug = ?, 
         readTime = ?, updatedAt = ?, categoryId = ?, 
-        authorId = ?, authorName = ?, date = ?
+        authorId = ?, date = ?, isFeatured = ?
         WHERE id = ?`,
       args: [
         updatedPost.title,
@@ -138,8 +138,8 @@ export class TursoPostRepository implements IPostRepository {
         updatedPost.updatedAt.toISOString(),
         updatedPost.categoryId,
         updatedPost.authorId,
-        updatedPost.authorName,
         updatedPost.date.toISOString(),
+        updatedPost.isFeatured,
         id,
       ],
     })
