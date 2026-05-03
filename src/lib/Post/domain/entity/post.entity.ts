@@ -67,6 +67,8 @@ export class Post {
     this.authorId = post.authorId
     this.date = post.date
     this.isFeatured = post.isFeatured
+    this.createdAt = post.createdAt
+    this.updatedAt = post.updatedAt
   }
 
   private generateSlug(title: string): string {
@@ -82,6 +84,47 @@ export class Post {
     const wordsPerMinute = 200
     const words = content.trim().split(/\s+/).length
     return Math.ceil(words / wordsPerMinute)
+  }
+
+  update(data: Partial<IPost>): Post {
+    const updatedData = {
+      id: this.id,
+      title: new PostTitle(data.title?.value ?? this.title.value),
+      beforeTitle: new PostBeforeTitle(
+        data.beforeTitle?.value ?? this.beforeTitle?.value ?? null,
+      ),
+      lead: new PostLead(data.lead?.value ?? this.lead.value),
+      metaDesc: new PostMetaDesc(data.metaDesc?.value ?? this.metaDesc.value),
+      featuredImg: new PostFeaturedImg(
+        data.featuredImg?.value ?? this.featuredImg.value,
+      ),
+      caption: new PostCaption(data.caption?.value ?? this.caption.value),
+      body: new PostBody(data.body?.value ?? this.body.value),
+      slug: new PostSlug(
+        data.slug?.value ??
+          (data.title?.value
+            ? this.generateSlug(data.title?.value)
+            : this.slug.value),
+      ),
+      readTime: new PostReadTime(
+        data.readTime?.value ??
+          (data.body?.value
+            ? this.calculateReadTime(data.body.value)
+            : this.readTime.value),
+      ),
+      createdAt: this.createdAt,
+      updatedAt: new PostUpdatedAt(new Date()),
+      categoryId: new PostCategoryId(
+        data.categoryId?.value ?? this.categoryId.value,
+      ),
+      authorId: new PostAuthorId(data.authorId?.value ?? this.authorId.value),
+      date: new PostDate(data.date?.value ?? this.date.value),
+      isFeatured: new PostIsFeatured(
+        data.isFeatured?.value ?? this.isFeatured.value,
+      ),
+    }
+
+    return new Post(updatedData)
   }
 
   toJSON() {
