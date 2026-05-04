@@ -1,6 +1,6 @@
 import { Request, Response } from "express"
-import { ImageService } from "../../application/services/ImageService"
 import { UploadedFile } from "express-fileupload"
+import { ImageService } from "../../../../application/services/ImageServices"
 
 export class UploadController {
   constructor(private imageService: ImageService) {}

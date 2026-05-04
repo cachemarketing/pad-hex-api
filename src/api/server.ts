@@ -6,6 +6,10 @@ import morgan from "morgan"
 import { apiRouter } from "../lib/shared/infrastructure/http/express/routes/api.routes"
 import { TursoDatabase } from "../lib/shared/infrastructure/database/turso.db"
 import { uploadMiddleware } from "../lib/shared/infrastructure/http/express/middleware/upload.middleware"
+import { S3ImageRepository } from "../lib/Images/infrastructure/storage/S3ImageRepository"
+import { S3ImageStorageService } from "../lib/Images/infrastructure/storage/S3ImageStorageService"
+import { ImageService } from "../lib/Images/application/services/ImageServices"
+import { createUploadRoutes } from "../lib/Images/infrastructure/http/express/routes/image.routes"
 
 dotenv.config()
 
@@ -130,7 +134,14 @@ export class Server {
       res.status(200).json({ status: "alive" })
     })
 
+    const imageRepository = new S3ImageRepository()
+
+    const imageStorageService = new S3ImageStorageService(imageRepository)
+
+    const imageService = new ImageService(imageStorageService, imageRepository)
+    const uploadRoutes = createUploadRoutes(imageService)
     this.app.use("/api", apiRouter)
+    this.app.use("/api", uploadRoutes)
   }
 
   async start(): Promise<void> {
