@@ -1,4 +1,4 @@
-import { User } from "../../domain/entities/User.entity"
+import { User } from "../../lib/User/domain/entity/user.entity"
 
 // No importes Express aquí, usa la declaración global
 declare global {
