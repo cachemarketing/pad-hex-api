@@ -12,7 +12,7 @@ export const userRouter = Router()
 
 const controller = new UserController()
 
-userRouter.get("/", requireRole(onlyAdminRole), controller.findByAll)
+userRouter.get("/", checkAuth, requireRole(onlyAdminRole), controller.findByAll)
 userRouter.get("/me", checkAuth, controller.findMe)
 userRouter.get("/:id", controller.findById)
-userRouter.put("/me", controller.update)
+userRouter.put("/me", checkAuth, requireRole(onlyAdminRole), controller.update)

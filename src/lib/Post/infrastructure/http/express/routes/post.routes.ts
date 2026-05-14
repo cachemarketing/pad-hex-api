@@ -1,5 +1,10 @@
 import { Router } from "express"
 import { PostController } from "../controller/post.controller"
+import {
+  checkAuth,
+  requireRole,
+} from "../../../../../shared/infrastructure/http/express/middleware/clerk.middleware"
+import { adminAndWriterRole } from "../../../../../shared/infrastructure/config/role.const"
 
 export const postRouter = Router()
 
@@ -9,6 +14,16 @@ postRouter.get("/", postController.findAll)
 postRouter.get("/slug/:slug", postController.findByslug)
 postRouter.get("/:id", postController.findById)
 
-postRouter.post("/", postController.save)
+postRouter.post(
+  "/",
+  checkAuth,
+  requireRole(adminAndWriterRole),
+  postController.save,
+)
 
-postRouter.put("/:id", postController.update)
+postRouter.put(
+  "/:id",
+  checkAuth,
+  requireRole(adminAndWriterRole),
+  postController.update,
+)
