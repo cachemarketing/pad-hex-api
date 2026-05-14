@@ -10,6 +10,7 @@ import { S3ImageRepository } from "../lib/Images/infrastructure/storage/S3ImageR
 import { S3ImageStorageService } from "../lib/Images/infrastructure/storage/S3ImageStorageService"
 import { ImageService } from "../lib/Images/application/services/ImageServices"
 import { createUploadRoutes } from "../lib/Images/infrastructure/http/express/routes/image.routes"
+import { clerkMiddleware } from "@clerk/express"
 
 dotenv.config()
 
@@ -80,11 +81,11 @@ export class Server {
 
     this.app.use(cors(corsOptions))
 
-    // Manejar explícitamente OPTIONS para todas las rutas
     this.app.options("*", cors(corsOptions))
 
     this.app.use(express.json({ limit: "10mb" }))
     this.app.use(express.urlencoded({ extended: true, limit: "10mb" }))
+
     this.app.use(uploadMiddleware)
     this.app.use(morgan("dev"))
 

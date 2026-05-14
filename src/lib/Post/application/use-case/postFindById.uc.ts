@@ -4,8 +4,8 @@ import { PostQueryRepository } from "../query/postQuery.repository"
 export class PostFindById {
   constructor(private repository: PostQueryRepository) {}
 
-  async run(slug: string) {
-    const post = await this.repository.findBySlug(slug)
+  async run(id: string) {
+    const post = await this.repository.findById(id)
 
     if (!post) {
       throw new PostNotFoundError("Post no encontrado")

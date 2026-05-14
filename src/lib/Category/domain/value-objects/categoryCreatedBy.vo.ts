@@ -1,7 +1,6 @@
-import { Uuid } from "../../../shared/domain/value-objects/uuid.vo"
-
-export class CategoryCreatedBy extends Uuid {
+export class CategoryCreatedBy {
+  value: string
   constructor(value: string) {
-    super(value)
+    this.value = value
   }
 }

@@ -1,28 +1,21 @@
 import { Request, Response, NextFunction } from "express"
-import { clerkMiddleware, getAuth } from "@clerk/express"
-import dotenv from "dotenv"
+import { clerkMiddleware, getAuth, clerkClient } from "@clerk/express" // ← ya NO importar clerkMiddleware
 import { User } from "../../../../../User/domain/entity/user.entity"
 import { serviceContainer } from "../../../services/serviceContainer"
-
-dotenv.config()
 
 export interface AuthenticatedRequest extends Request {
   userId?: string
   user?: User
   clerkAuth?: ReturnType<typeof getAuth>
 }
-
-const origins = process.env.ACCEPTED_ORIGIN
-  ? process.env.ACCEPTED_ORIGIN.split(",").map((o) => o.trim())
-  : []
-
 export const requireAuth = clerkMiddleware({
   publishableKey: process.env.CLERK_PUBLISHABLE_KEY,
   secretKey: process.env.CLERK_SECRET_KEY,
-  authorizedParties: origins,
 })
 
-export const authMiddleware = () => [requireAuth]
+export const authMiddleware = () => {
+  return [requireAuth, getAuthUser]
+}
 
 export const getAuthUser = (req: Request) => getAuth(req)
 
@@ -40,28 +33,19 @@ export const requireRole = (roles: string[]) => {
       const auth = getAuth(req as Request)
 
       if (!auth?.userId) {
-        res.status(401).json({
-          success: false,
-          error: "No autenticado",
-        })
+        res.status(401).json({ success: false, error: "No autenticado" })
         return
       }
 
       const user = await serviceContainer.user.findByClerkId.run(auth.userId)
 
       if (!user) {
-        res.status(401).json({
-          success: false,
-          error: "Usuario no encontrado",
-        })
+        res.status(401).json({ success: false, error: "Usuario no encontrado" })
         return
       }
 
       if (!user.isActive.value) {
-        res.status(403).json({
-          success: false,
-          error: "Usuario inactivo",
-        })
+        res.status(403).json({ success: false, error: "Usuario inactivo" })
         return
       }
 
@@ -80,12 +64,26 @@ export const requireRole = (roles: string[]) => {
       next()
     } catch (error) {
       console.error("Error checking role:", error)
-      res.status(500).json({
-        success: false,
-        error: "Error verificando permisos",
-      })
+      res
+        .status(500)
+        .json({ success: false, error: "Error verificando permisos" })
     }
   }
 }
 
-export const requireAuthWithUser = () => [requireAuth]
+export const checkAuth = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
+  const { isAuthenticated, userId } = getAuth(req)
+
+  if (!isAuthenticated) {
+    return res.status(401).json({ error: "User not authenticated" })
+  }
+
+  const user = await serviceContainer.user.findByClerkId.run(userId)
+  //@ts-ignore
+  req.user = { ...user }
+  next()
+}

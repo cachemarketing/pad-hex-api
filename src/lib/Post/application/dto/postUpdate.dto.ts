@@ -1,4 +1,4 @@
-export interface PostDetailDTO {
+export interface PostUpdateDTO {
   id: string
   title: string
   beforeTitle?: string
@@ -9,19 +9,10 @@ export interface PostDetailDTO {
   body: string
   slug: string
   readTime: number
-  createdAt: Date
-  updatedAt: Date
+  createdAt?: Date
+  updatedAt?: Date
   categoryId: string
   authorId: string
   date: Date
   isFeatured: boolean
-  category: {
-    name: string
-    slug: string
-  }
-  author: {
-    name: string
-    email: string
-    role: string
-  }
 }

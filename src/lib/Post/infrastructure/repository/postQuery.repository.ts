@@ -23,16 +23,11 @@ export interface PostTurso {
   authorId: string
   date: Date
   isFeatured: boolean
-  category: {
-    name: string
-    slug: string
-  }
-  author: {
-    name: string
-    email: string
-    role: string
-    clerkId: string
-  }
+  category_name: string
+  category_slug: string
+  author_name: string
+  author_role: string
+  author_email: string
 }
 
 export class PostTursoQueryRepository implements PostQueryRepository {
@@ -44,7 +39,9 @@ export class PostTursoQueryRepository implements PostQueryRepository {
     builder
       .select([
         "p.*",
-        "u.name as authorName",
+        "u.name as author_name",
+        "u.role as author_role",
+        "u.email as author_email",
         "c.name as category_name",
         "c.slug as category_slug",
       ])
@@ -85,7 +82,9 @@ export class PostTursoQueryRepository implements PostQueryRepository {
     const result = await this.db.execute({
       sql: `
       SELECT p.*,
-      u.name as authorName,
+      u.name as author_name,
+      u.role as author_role,
+      u.email as author_email,
       c.name as category_name,
       c.slug as category_slug
       FROM ${this.tableName} p
@@ -96,6 +95,7 @@ export class PostTursoQueryRepository implements PostQueryRepository {
     })
 
     if (result.rows.length === 0) return null
+    console.log(result)
     return this.mapToDetails(result.rows[0] as unknown as PostTurso)
   }
 
@@ -118,14 +118,13 @@ export class PostTursoQueryRepository implements PostQueryRepository {
       date: row.date,
       isFeatured: row.isFeatured,
       category: {
-        name: row.category.name,
-        slug: row.category.slug,
+        name: row.category_name,
+        slug: row.category_slug,
       },
       author: {
-        name: row.author.name,
-        email: row.author.email,
-        role: row.author.role,
-        clerkId: row.author.clerkId,
+        name: row.author_name,
+        email: row.author_email,
+        role: row.author_role,
       },
     }
   }

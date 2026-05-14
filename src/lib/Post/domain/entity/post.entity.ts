@@ -62,7 +62,7 @@ export class Post {
     this.caption = post.caption
     this.body = post.body
     this.slug = post.slug
-    this.readTime = post.readTime
+    this.readTime = new PostReadTime(this.calculateReadTime(post.body.value))
     this.categoryId = post.categoryId
     this.authorId = post.authorId
     this.date = post.date
@@ -127,7 +127,7 @@ export class Post {
     return new Post(updatedData)
   }
 
-  toJSON() {
+  tpPrimitives() {
     return {
       id: this.id.value,
       title: this.title.value,

@@ -1,3 +1,4 @@
+import { randomUUID } from "node:crypto"
 import { Post } from "../../domain/entity/post.entity"
 import { PostRepository } from "../../domain/repository/post.repository"
 import { PostAuthorId } from "../../domain/value-objects/postAuthorId.vo"
@@ -20,8 +21,9 @@ export class PostSave {
   constructor(private repository: PostRepository) {}
 
   async run(dto: PostSaveDTO) {
+    const id = randomUUID()
     const post = new Post({
-      id: new PostId(dto.id),
+      id: new PostId(id),
       title: new PostTitle(dto.title),
       beforeTitle: new PostBeforeTitle(dto.beforeTitle ?? null),
       lead: new PostLead(dto.lead),
@@ -29,7 +31,7 @@ export class PostSave {
       featuredImg: new PostFeaturedImg(dto.featuredImg),
       caption: new PostCaption(dto.caption),
       body: new PostBody(dto.body),
-      slug: new PostSlug(dto.slug),
+      slug: new PostSlug(dto.title),
       readTime: new PostReadTime(dto.readTime),
       categoryId: new PostCategoryId(dto.categoryId),
       authorId: new PostAuthorId(dto.authorId),

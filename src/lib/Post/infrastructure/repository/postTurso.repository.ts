@@ -55,12 +55,13 @@ export class PostTursoRepository implements PostRepository {
   private db = TursoDatabase.getInstance().getClient()
   private tableName = "posts"
   async save(post: Post): Promise<void> {
+    console.log(post)
     const query = {
       sql: `INSERT INTO ${this.tableName} (
         id, title, beforeTitle, lead, metaDesc, featuredImg, caption, 
         body, slug, readTime, categoryId, 
         authorId, date, isFeatured
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,)`,
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       args: [
         post.id.value,
         post.title.value,
@@ -74,7 +75,7 @@ export class PostTursoRepository implements PostRepository {
         post.readTime.value,
         post.categoryId.value,
         post.authorId.value,
-        post.date.value.toISOString(),
+        post.date.value,
         post.isFeatured.value,
       ],
     }
@@ -115,10 +116,10 @@ export class PostTursoRepository implements PostRepository {
         updatedPost.body.value,
         updatedPost.slug.value,
         updatedPost.readTime.value,
-        updatedPost.updatedAt?.value.toISOString() ?? null,
+        updatedPost.updatedAt?.value ?? null,
         updatedPost.categoryId.value,
         updatedPost.authorId.value,
-        updatedPost.date.value.toISOString(),
+        updatedPost.date.value,
         updatedPost.isFeatured.value,
         id.value,
       ],
