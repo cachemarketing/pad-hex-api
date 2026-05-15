@@ -24,4 +24,5 @@ export interface PostDetailDTO {
     email: string
     role: string
   }
+  ogImg: string
 }

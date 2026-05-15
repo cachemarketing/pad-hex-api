@@ -26,13 +26,13 @@ export class S3ImageStorageService implements IImageStorageService {
     },
   ): Promise<IImageUploadResult> {
     try {
-      // Procesar imagen con sharp
-      let processedImage = sharp(file)
-      let metadata = await sharp(file).metadata()
+      const baseId = uuidv4()
+      const basePath = `posts/${userId}`
 
-      // Redimensionar si se solicita
+      // Pipeline base con resize opcional
+      let pipeline = sharp(file)
       if (options?.resize) {
-        processedImage = processedImage.resize(
+        pipeline = pipeline.resize(
           options.resize.width,
           options.resize.height,
           {
@@ -40,36 +40,52 @@ export class S3ImageStorageService implements IImageStorageService {
             position: "center",
           },
         )
-        metadata = await processedImage.metadata()
       }
 
-      // Comprimir si se solicita
-      let imageBuffer: Buffer
-      if (options?.quality && options.quality < 100) {
-        imageBuffer = await processedImage
-          .jpeg({ quality: options.quality, progressive: true })
-          .toBuffer()
-      } else {
-        imageBuffer = await processedImage.toBuffer()
-      }
+      const quality = options?.quality ?? 80
 
-      // Generar nombre único para el archivo
-      const extension = originalName.split(".").pop() || "jpg"
-      const filename = `${uuidv4()}.${extension}`
-      const key = `posts/${userId}/${filename}`
+      // ── JPG ──────────────────────────────────────────────────────────────
+      const jpgBuffer = await pipeline
+        .clone()
+        .jpeg({ quality, progressive: true })
+        .toBuffer()
 
-      // Subir a S3 (retorna URL de CloudFront si está configurado)
-      const url = await this.s3Client.uploadFile(key, imageBuffer, mimeType)
+      const jpgFilename = `${baseId}.jpg`
+      const jpgKey = `${basePath}/${jpgFilename}`
+      const jpgUrl = await this.s3Client.uploadFile(
+        jpgKey,
+        jpgBuffer,
+        "image/jpeg",
+      )
 
-      // Guardar referencia en base de datos
+      // ── AVIF ─────────────────────────────────────────────────────────────
+      const avifBuffer = await pipeline
+        .clone()
+        .avif({ quality, effort: 4 }) // effort 4 = buen balance velocidad/compresión
+        .toBuffer()
+
+      const avifFilename = `${baseId}.avif`
+      const avifKey = `${basePath}/${avifFilename}`
+      const avifUrl = await this.s3Client.uploadFile(
+        avifKey,
+        avifBuffer,
+        "image/avif",
+      )
+
+      // ── Metadata ─────────────────────────────────────────────────────────
+      const metadata = await pipeline.clone().metadata()
+
+      // ── Persistencia (registro principal = JPG) ──────────────────────────
       const imageRecord: IImageUploadResult = {
-        id: uuidv4(),
-        url,
-        key,
+        id: baseId,
+        url: jpgUrl,
+        key: jpgKey,
         bucket: this.s3Client.getBucket(),
-        filename,
-        size: imageBuffer.length,
-        mimeType,
+        filename: jpgFilename,
+        size: jpgBuffer.length,
+        mimeType: "image/jpeg",
+        avifUrl,
+        avifKey,
       }
 
       await this.imageRepository.save({
@@ -90,10 +106,15 @@ export class S3ImageStorageService implements IImageStorageService {
 
   async deleteImage(key: string): Promise<void> {
     try {
-      await this.s3Client.deleteFile(key)
+      // Intentar borrar también la variante AVIF derivada del mismo baseId
+      const avifKey = key.replace(/\.jpg$/, ".avif")
 
-      // Invalidar caché de CloudFront
-      await this.s3Client.invalidateCache([`/${key}`])
+      await Promise.allSettled([
+        this.s3Client.deleteFile(key),
+        this.s3Client.deleteFile(avifKey),
+      ])
+
+      await this.s3Client.invalidateCache([`/${key}`, `/${avifKey}`])
 
       const image = await this.imageRepository.findByKey(key)
       if (image) {

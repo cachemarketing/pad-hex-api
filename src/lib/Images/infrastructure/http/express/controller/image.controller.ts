@@ -39,10 +39,12 @@ export class UploadController {
       res.status(200).json({
         success: true,
         data: {
-          url: result.url,
-          key: result.key,
+          url: result.avifUrl,
+          key: result.avifKey,
           filename: result.filename,
           size: result.size,
+          ogImg: result.url,
+          avifKey: result.key,
         },
         message: "Imagen subida exitosamente",
       })

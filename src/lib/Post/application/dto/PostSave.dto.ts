@@ -15,4 +15,5 @@ export interface PostSaveDTO {
   authorId: string
   date: Date
   isFeatured: boolean
+  ogImg: string
 }

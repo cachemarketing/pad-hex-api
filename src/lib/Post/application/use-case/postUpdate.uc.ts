@@ -13,6 +13,7 @@ import { PostId } from "../../domain/value-objects/postId.vo"
 import { PostIsFeatured } from "../../domain/value-objects/postIsFeatured.vo"
 import { PostLead } from "../../domain/value-objects/postLead.vo"
 import { PostMetaDesc } from "../../domain/value-objects/postMetaDesc.vo"
+import { PostOgImg } from "../../domain/value-objects/PostOgImg.vo"
 import { PostReadTime } from "../../domain/value-objects/postReadTime.vo"
 import { PostSlug } from "../../domain/value-objects/postSlug.vo"
 import { PostTitle } from "../../domain/value-objects/postTitle.vo"
@@ -51,6 +52,7 @@ export class PostUpdate {
       readTime: new PostReadTime(post.readTime ?? exists.readTime.value),
       createdAt: new PostCreatedAt(exists.createdAt?.value ?? new Date()),
       updatedAt: new PostUpdatedAt(new Date()),
+      ogImg: new PostOgImg(post.ogImg ?? exists.ogImg.value),
     })
 
     await this.repository.update(new PostId(id), updatePost)

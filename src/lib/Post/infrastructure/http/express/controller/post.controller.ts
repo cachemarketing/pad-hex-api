@@ -9,6 +9,7 @@ export class PostController {
         ...req.body,
         date: Date.now(),
       }
+      console.log(post)
       await serviceContainer.post.save.run(post)
 
       return res.status(201).send()

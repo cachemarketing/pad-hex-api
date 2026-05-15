@@ -16,6 +16,7 @@ import { PostReadTime } from "../../domain/value-objects/postReadTime.vo"
 import { PostSlug } from "../../domain/value-objects/postSlug.vo"
 import { PostTitle } from "../../domain/value-objects/postTitle.vo"
 import { PostSaveDTO } from "../dto/PostSave.dto"
+import { PostOgImg } from "../../domain/value-objects/PostOgImg.vo"
 
 export class PostSave {
   constructor(private repository: PostRepository) {}
@@ -37,6 +38,7 @@ export class PostSave {
       authorId: new PostAuthorId(dto.authorId),
       date: new PostDate(dto.date),
       isFeatured: new PostIsFeatured(dto.isFeatured),
+      ogImg: new PostOgImg(dto.ogImg),
     })
 
     return await this.repository.save(post)

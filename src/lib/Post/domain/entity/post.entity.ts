@@ -10,6 +10,7 @@ import { PostId } from "../value-objects/postId.vo"
 import { PostIsFeatured } from "../value-objects/postIsFeatured.vo"
 import { PostLead } from "../value-objects/postLead.vo"
 import { PostMetaDesc } from "../value-objects/postMetaDesc.vo"
+import { PostOgImg } from "../value-objects/PostOgImg.vo"
 import { PostReadTime } from "../value-objects/postReadTime.vo"
 import { PostSlug } from "../value-objects/postSlug.vo"
 import { PostTitle } from "../value-objects/postTitle.vo"
@@ -32,6 +33,7 @@ export interface IPost {
   authorId: PostAuthorId
   date: PostDate
   isFeatured: PostIsFeatured
+  ogImg: PostOgImg
 }
 
 export class Post {
@@ -51,7 +53,7 @@ export class Post {
   public readonly authorId: PostAuthorId
   public readonly date: PostDate
   public readonly isFeatured: PostIsFeatured
-
+  public readonly ogImg: PostOgImg
   constructor(post: IPost) {
     this.id = post.id
     this.title = post.title
@@ -69,6 +71,7 @@ export class Post {
     this.isFeatured = post.isFeatured
     this.createdAt = post.createdAt
     this.updatedAt = post.updatedAt
+    this.ogImg = post.ogImg
   }
 
   private generateSlug(title: string): string {
@@ -122,6 +125,7 @@ export class Post {
       isFeatured: new PostIsFeatured(
         data.isFeatured?.value ?? this.isFeatured.value,
       ),
+      ogImg: new PostOgImg(data.ogImg?.value ?? this.ogImg.value),
     }
 
     return new Post(updatedData)
@@ -145,6 +149,7 @@ export class Post {
       authorId: this.authorId.value,
       date: this.date.value,
       isFeatured: this.isFeatured.value,
+      ogImg: this.ogImg.value,
     }
   }
 }

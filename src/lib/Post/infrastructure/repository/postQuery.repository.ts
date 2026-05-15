@@ -28,6 +28,7 @@ export interface PostTurso {
   author_name: string
   author_role: string
   author_email: string
+  og_img: string
 }
 
 export class PostTursoQueryRepository implements PostQueryRepository {
@@ -95,7 +96,6 @@ export class PostTursoQueryRepository implements PostQueryRepository {
     })
 
     if (result.rows.length === 0) return null
-    console.log(result)
     return this.mapToDetails(result.rows[0] as unknown as PostTurso)
   }
 
@@ -117,6 +117,7 @@ export class PostTursoQueryRepository implements PostQueryRepository {
       authorId: row.authorId,
       date: row.date,
       isFeatured: row.isFeatured,
+      ogImg: row.og_img,
       category: {
         name: row.category_name,
         slug: row.category_slug,

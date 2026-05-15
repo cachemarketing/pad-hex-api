@@ -18,6 +18,7 @@ import { PostId } from "../../domain/value-objects/postId.vo"
 import { PostIsFeatured } from "../../domain/value-objects/postIsFeatured.vo"
 import { PostLead } from "../../domain/value-objects/postLead.vo"
 import { PostMetaDesc } from "../../domain/value-objects/postMetaDesc.vo"
+import { PostOgImg } from "../../domain/value-objects/PostOgImg.vo"
 import { PostReadTime } from "../../domain/value-objects/postReadTime.vo"
 import { PostSlug } from "../../domain/value-objects/postSlug.vo"
 import { PostTitle } from "../../domain/value-objects/postTitle.vo"
@@ -39,6 +40,7 @@ export interface PostTurso {
   authorId: string
   date: Date
   isFeatured: boolean
+  og_img: string
   category: {
     name: string
     slug: string
@@ -55,13 +57,12 @@ export class PostTursoRepository implements PostRepository {
   private db = TursoDatabase.getInstance().getClient()
   private tableName = "posts"
   async save(post: Post): Promise<void> {
-    console.log(post)
     const query = {
       sql: `INSERT INTO ${this.tableName} (
         id, title, beforeTitle, lead, metaDesc, featuredImg, caption, 
         body, slug, readTime, categoryId, 
-        authorId, date, isFeatured
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        authorId, date, isFeatured, og_img
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       args: [
         post.id.value,
         post.title.value,
@@ -77,6 +78,7 @@ export class PostTursoRepository implements PostRepository {
         post.authorId.value,
         post.date.value,
         post.isFeatured.value,
+        post.ogImg.value,
       ],
     }
 
@@ -104,7 +106,7 @@ export class PostTursoRepository implements PostRepository {
         title = ?, beforeTitle = ?, lead = ?, metaDesc = ?, 
         featuredImg = ?, caption = ?, body = ?, slug = ?, 
         readTime = ?, updatedAt = ?, categoryId = ?, 
-        authorId = ?, date = ?, isFeatured = ?
+        authorId = ?, date = ?, isFeatured = ?, og_img = ?
         WHERE id = ?`,
       args: [
         updatedPost.title.value,
@@ -121,6 +123,7 @@ export class PostTursoRepository implements PostRepository {
         updatedPost.authorId.value,
         updatedPost.date.value,
         updatedPost.isFeatured.value,
+        updatedPost.ogImg.value,
         id.value,
       ],
     })
@@ -142,6 +145,7 @@ export class PostTursoRepository implements PostRepository {
       authorId: new PostAuthorId(row.authorId),
       date: new PostDate(row.date),
       isFeatured: new PostIsFeatured(row.isFeatured),
+      ogImg: new PostOgImg(row.og_img),
     })
   }
 }

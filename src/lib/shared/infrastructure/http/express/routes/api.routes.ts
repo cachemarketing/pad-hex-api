@@ -7,6 +7,6 @@ export const apiRouter = Router()
 
 const [getAuthUser] = authMiddleware()
 
-apiRouter.use("/posts", postRouter)
-apiRouter.use("/categories", categoryRouter)
+apiRouter.use("/posts", getAuthUser, postRouter)
+apiRouter.use("/categories", getAuthUser, categoryRouter)
 apiRouter.use("/users", getAuthUser, userRouter)

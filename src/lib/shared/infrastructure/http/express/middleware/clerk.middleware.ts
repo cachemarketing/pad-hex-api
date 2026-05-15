@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from "express"
-import { clerkMiddleware, getAuth, clerkClient } from "@clerk/express" // ← ya NO importar clerkMiddleware
+import { clerkMiddleware, getAuth } from "@clerk/express" // ← ya NO importar clerkMiddleware
 import { User } from "../../../../../User/domain/entity/user.entity"
 import { serviceContainer } from "../../../services/serviceContainer"
 

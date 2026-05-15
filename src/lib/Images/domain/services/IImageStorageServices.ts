@@ -6,6 +6,8 @@ export interface IImageUploadResult {
   filename: string
   size: number
   mimeType: string
+  avifUrl?: string
+  avifKey?: string
 }
 
 export interface IImageStorageService {
